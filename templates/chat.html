@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Workspace Chat{% endblock %}
+
+{% block head %}
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='socket.io.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50 p-4 md:p-6 font-sans" id="chat-root" data-current-user-id="{{ session.get('user_id') }}">
+    
+    <div class="flex w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden">
+        
+        <div class="w-80 flex flex-col bg-gray-50/50 border-r border-gray-100">
+            
+            <div class="p-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-base font-medium text-gray-900">{{ current_user.first_name }}</h2>
+                    <p class="text-xs text-gray-400">@{{ current_user.username }}</p>
+                </div>
+                <a href="{{ url_for('logout') }}" class="text-xs text-gray-400 hover:text-red-500 transition-colors">Sign Out</a>
+            </div>
+
+            <div class="px-6 pb-4">
+                <div class="relative flex items-center">
+                    <input type="text" id="search-username" placeholder="Type username..." 
+                           class="w-full pl-3 pr-14 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 transition-colors">
+                    <button id="search-btn" class="absolute right-1.5 bg-gray-900 text-white text-xs px-2.5 py-1 rounded-lg hover:bg-gray-800 transition-colors">
+                        Find
+                    </button>
+                </div>
+                <p id="search-error" class="text-xs text-red-500 mt-1.5 ml-1 hidden"></p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-4 pb-4 space-y-1" id="chats-list">
+                <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2">Direct Messages</p>
+                
+                {% for chat in existing_chats %}
+                <div onclick="selectChat('{{ chat.id }}', '{{ chat.first_name }} {{ chat.last_name }}', '{{ chat.username }}')" 
+                     id="chat-user-{{ chat.id }}"
+                     class="chat-item flex items-center p-2.5 rounded-xl cursor-pointer hover:bg-white hover:shadow-xs border border-transparent transition-all group">
+                    <div class="w-8 h-8 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center font-medium text-xs mr-3 group-hover:bg-gray-900 group-hover:text-white transition-colors">
+                        {{ chat.first_name[0] }}{{ chat.last_name[0] }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-normal text-gray-700 truncate group-hover:text-gray-900">{{ chat.first_name }} {{ chat.last_name }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-white" id="chat-window-placeholder">
+            <div class="m-auto text-center animate-fade-in">
+                <p class="text-sm text-gray-400 font-light tracking-wide">Select a conversation to start</p>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-white hidden" id="chat-window-active">
+            <div class="px-8 py-5 border-b border-gray-50 flex items-center justify-between">
+                <div>
+                    <h3 id="active-user-name" class="text-base font-medium text-gray-900">Name</h3>
+                    <p id="active-user-username" class="text-xs text-gray-400">@username</p>
+                </div>
+            </div>
+
+            <div id="messages-container" class="flex-1 overflow-y-auto px-8 py-6 space-y-4 bg-gray-50/30">
+                </div>
+
+            <div class="p-6 bg-white">
+                <form id="message-form" class="flex items-center gap-3" onsubmit="sendMessage(event)">
+                    <input type="text" id="message-input" autocomplete="off" placeholder="Write a message..." 
+                           class="flex-1 px-4 py-2.5 bg-gray-50 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-gray-200 text-sm transition-all">
+                    <button type="submit" class="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

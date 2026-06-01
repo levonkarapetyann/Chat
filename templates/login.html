@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">Welcome Back</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="auth-alert {% if category == 'success' %}success{% else %}danger{% endif %}">
+                        {{ msg }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="auth-form-group">
+                <label class="auth-label">Username</label>
+                <input type="text" name="username" required class="auth-input">
+            </div>
+            <div class="auth-form-group last">
+                <label class="auth-label">Password</label>
+                <input type="password" name="password" required class="auth-input">
+            </div>
+            <button type="submit" class="auth-btn">Log In</button>
+        </form>
+        <p class="auth-footer-text">Don't have an account? <a href="{{ url_for('register') }}" class="auth-link">Sign Up</a></p>
+    </div>
+</div>
+{% endblock %}

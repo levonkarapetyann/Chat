@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">Create Account</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="auth-alert danger">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="auth-form-group">
+                <label class="auth-label">Username</label>
+                <input type="text" name="username" required class="auth-input">
+            </div>
+            <div class="auth-form-group">
+                <label class="auth-label">First Name</label>
+                <input type="text" name="first_name" required class="auth-input">
+            </div>
+            <div class="auth-form-group">
+                <label class="auth-label">Last Name</label>
+                <input type="text" name="last_name" required class="auth-input">
+            </div>
+            <div class="auth-form-group last">
+                <label class="auth-label">Password</label>
+                <input type="password" name="password" required class="auth-input">
+            </div>
+            <button type="submit" class="auth-btn">Sign Up</button>
+        </form>
+        <p class="auth-footer-text">Already have an account? <a href="{{ url_for('login') }}" class="auth-link">Log In</a></p>
+    </div>
+</div>
+{% endblock %}
