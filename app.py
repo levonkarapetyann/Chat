@@ -11,7 +11,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
-# ==================== DATABASE MODELS ====================
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,7 +26,6 @@ class Message(db.Model):
     text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-# ==================== ROUTES ====================
 
 @app.route('/')
 def index():
@@ -82,7 +80,6 @@ def chat():
     if not current_user:
         return redirect(url_for('login'))
     
-    # Получаем список пользователей, с которыми уже есть переписка
     sent_messages = db.session.query(Message.recipient_id).filter(Message.sender_id == current_user_id)
     rcvd_messages = db.session.query(Message.sender_id).filter(Message.recipient_id == current_user_id)
     chat_partner_ids = sent_messages.union(rcvd_messages).all()

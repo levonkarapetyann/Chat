@@ -1,7 +1,6 @@
 const socket = io();
 let currentPartnerId = null;
 
-// Получаем ID текущего пользователя (если он есть)
 function getCurrentUserId() {
     const chatRoot = document.getElementById('chat-root');
     return chatRoot ? chatRoot.dataset.currentUserId : null;
@@ -80,7 +79,6 @@ function sendMessage(event) {
     }
 }
 
-// Поиск пользователей
 document.getElementById('search-btn').addEventListener('click', function() {
     const usernameInput = document.getElementById('search-username');
     let username = usernameInput.value.trim().toLowerCase();
@@ -104,7 +102,6 @@ document.getElementById('search-btn').addEventListener('click', function() {
                 if (!document.getElementById(`chat-user-${u.id}`)) {
                     const chatsList = document.getElementById('chats-list');
                     
-                    // Безопасное получение первой буквы имени и фамилии
                     const fLetter = u.first_name ? u.first_name[0] : '?';
                     const lLetter = u.last_name ? u.last_name[0] : '?';
                     const initials = (fLetter + lLetter).toUpperCase();
