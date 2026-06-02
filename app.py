@@ -142,13 +142,19 @@ def logout():
 @socketio.on('join')
 def on_join(data):
     user_id = session.get('user_id')
-    partner_id = data['partner_id']
+    if not user_id:
+        return
+
+    partner_id = int(data['partner_id']) 
     room = f"room_{min(user_id, partner_id)}_{max(user_id, partner_id)}"
     join_room(room)
 
 @socketio.on('send_message')
 def handle_send_message(data):
     sender_id = session.get('user_id')
+    if not sender_id:
+        return
+        
     recipient_id = int(data['recipient_id'])
     text = data['text'].strip()
 
@@ -158,9 +164,11 @@ def handle_send_message(data):
         db.session.commit()
 
         room = f"room_{min(sender_id, recipient_id)}_{max(sender_id, recipient_id)}"
+        
         emit('new_message', {
             'sender_id': sender_id,
-            'text': text
+            'text': text,
+            'timestamp': msg.timestamp.strftime('%H:%M')
         }, room=room)
 
 if __name__ == '__main__':

@@ -9,7 +9,9 @@ function getCurrentUserId() {
 socket.on('new_message', function(data) {
     const currentUserId = getCurrentUserId();
     if (currentPartnerId && (data.sender_id == currentPartnerId || data.sender_id == currentUserId)) {
-        appendMessage(data.text, data.sender_id == currentUserId, 'Just now');
+        const timestamp = data.timestamp || new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        appendMessage(data.text, data.sender_id == currentUserId, timestamp);
         scrollToBottom();
     }
 });
@@ -65,14 +67,14 @@ function appendMessage(text, isMe, timestamp) {
     container.appendChild(msgWrapper);
 }
 
-function sendMessage(event) {
+window.sendMessage = function(event) {
     event.preventDefault();
     const input = document.getElementById('message-input');
     const text = input.value.trim();
     
     if (text && currentPartnerId) {
         socket.emit('send_message', {
-            recipient_id: currentPartnerId,
+            recipient_id: parseInt(currentPartnerId),
             text: text
         });
         input.value = '';
