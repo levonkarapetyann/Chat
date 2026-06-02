@@ -22,6 +22,7 @@ function selectChat(partnerId, fullName, username) {
     
     document.getElementById('chat-window-placeholder').classList.add('hidden');
     document.getElementById('chat-window-active').classList.remove('hidden');
+    document.getElementById('delete-chat-btn').style.display = 'block';
     
     document.getElementById('active-user-name').innerText = fullName;
     document.getElementById('active-user-username').innerText = '@' + username;
@@ -142,4 +143,78 @@ function scrollToBottom() {
     if (container) {
         container.scrollTop = container.scrollHeight;
     }
+}
+
+const deleteModal = document.getElementById('delete-modal');
+const deleteChatBtn = document.getElementById('delete-chat-btn');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const deleteOnlyMeBtn = document.getElementById('delete-only-me-btn');
+const deleteEveryoneBtn = document.getElementById('delete-everyone-btn');
+
+const originalSelectChat = selectChat;
+selectChat = function(partnerId, fullName, username) {
+    originalSelectChat(partnerId, fullName, username);
+    
+    const btn = document.getElementById('delete-chat-btn');
+    if (btn) {
+        btn.classList.remove('hidden');
+    }
+};
+
+if (deleteChatBtn) {
+    deleteChatBtn.addEventListener('click', function() {
+        deleteModal.style.display = 'flex';
+    });
+}
+
+function hideDeleteModal() {
+    deleteModal.style.display = 'none';
+}
+
+if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', hideDeleteModal);
+}
+
+if (deleteModal) {
+    deleteModal.addEventListener('click', function(event) {
+        if (event.target === deleteModal) {
+            hideDeleteModal();
+        }
+    });
+}
+
+function sendDeleteRequest(type) {
+    if (!currentPartnerId) return;
+
+    fetch(`/delete_chat/${currentPartnerId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ delete_type: type })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            hideDeleteModal();
+            const container = document.getElementById('messages-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="m-auto text-center py-8 animate-fade-in">
+                        <p class="text-xs text-gray-400 font-light">Chat history deleted</p>
+                    </div>
+                `;
+            }
+        } else {
+            alert("Ошибка: " + data.message);
+        }
+    })
+    .catch(err => console.error("Error deleting chat:", err));
+}
+
+if (deleteOnlyMeBtn) {
+    deleteOnlyMeBtn.addEventListener('click', () => sendDeleteRequest('only_me'));
+}
+if (deleteEveryoneBtn) {
+    deleteEveryoneBtn.addEventListener('click', () => sendDeleteRequest('for_everyone'));
 }

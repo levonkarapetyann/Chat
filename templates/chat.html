@@ -64,6 +64,11 @@
                     <h3 id="active-user-name" class="text-base font-medium text-gray-900">Name</h3>
                     <p id="active-user-username" class="text-xs text-gray-400">@username</p>
                 </div>
+                <button id="delete-chat-btn" class="hidden text-gray-400 hover:text-red-500 p-2 rounded-xl hover:bg-gray-50 transition-colors" title="Delete Chat">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-16v1a3 3 0 003 3h10M4 7h16" />
+                    </svg>
+                </button>
             </div>
 
             <div id="messages-container" class="flex-1 overflow-y-auto px-8 py-6 space-y-4 bg-gray-50/30">
@@ -80,6 +85,24 @@
             </div>
         </div>
 
+    </div>
+</div>
+<div id="delete-modal">
+    <div class="modal-card">
+        <h3 class="modal-title">Delete Chat?</h3>
+        <p class="modal-text">Вы хотите удалить историю сообщений только для себя или для обоих собеседников?</p>
+        
+        <div class="flex flex-col gap-2">
+            <button id="delete-only-me-btn" class="btn-delete-only-me">
+                Удалить только у себя
+            </button>
+            <button id="delete-everyone-btn" class="btn-delete-everyone">
+                Удалить у обоих пользователей
+            </button>
+            <button id="close-modal-btn" class="btn-modal-close">
+                Отмена
+            </button>
+        </div>
     </div>
 </div>
 

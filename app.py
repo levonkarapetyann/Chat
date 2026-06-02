@@ -25,6 +25,8 @@ class Message(db.Model):
     recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     text = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    deleted_by_sender = db.Column(db.Boolean, default=False)
+    deleted_by_recipient = db.Column(db.Boolean, default=False)
 
 
 @app.route('/')
@@ -118,21 +120,29 @@ def search_user():
 
 @app.route('/get_messages/<int:partner_id>')
 def get_messages(partner_id):
-    current_user_id = session.get('user_id')
-    if not current_user_id:
-        return jsonify([])
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
 
     messages = Message.query.filter(
-        ((Message.sender_id == current_user_id) & (Message.recipient_id == partner_id)) |
-        ((Message.sender_id == partner_id) & (Message.recipient_id == current_user_id))
+        ((Message.sender_id == user_id) & (Message.recipient_id == partner_id)) |
+        ((Message.sender_id == partner_id) & (Message.recipient_id == user_id))
     ).order_by(Message.timestamp.asc()).all()
 
-    return jsonify([{\
-        'sender_id': msg.sender_id,\
-        'recipient_id': msg.recipient_id,\
-        'text': msg.text,\
-        'timestamp': msg.timestamp.strftime('%H:%M')\
-    } for msg in messages])
+    result = []
+    for msg in messages:
+        if msg.sender_id == user_id and msg.deleted_by_sender:
+            continue
+        if msg.recipient_id == user_id and msg.deleted_by_recipient:
+            continue
+
+        result.append({
+            'sender_id': msg.sender_id,
+            'text': msg.text,
+            'timestamp': msg.timestamp.strftime('%H:%M')
+        })
+
+    return jsonify(result)
 
 @app.route('/logout')
 def logout():
@@ -170,6 +180,33 @@ def handle_send_message(data):
             'text': text,
             'timestamp': msg.timestamp.strftime('%H:%M')
         }, room=room)
+
+@app.route('/delete_chat/<int:partner_id>', methods=['POST'])
+def delete_chat(partner_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    delete_type = data.get('delete_type')
+
+
+    messages = Message.query.filter(
+        ((Message.sender_id == user_id) & (Message.recipient_id == partner_id)) |
+        ((Message.sender_id == partner_id) & (Message.recipient_id == user_id))
+    ).all()
+
+    for msg in messages:
+        if delete_type == 'for_everyone':
+            db.session.delete(msg)
+        else:
+            if msg.sender_id == user_id:
+                msg.deleted_by_sender = True
+            if msg.recipient_id == user_id:
+                msg.deleted_by_recipient = True
+
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'Chat deleted'})
 
 if __name__ == '__main__':
     with app.app_context():
